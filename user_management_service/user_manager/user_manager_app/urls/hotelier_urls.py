@@ -1,6 +1,6 @@
 from django.urls import path
 
-from ..hotelier_manager_views import *
+from ..views.hotelier_manager_views import *
 
 urlpatterns = [
     path('', HotelierManagerViews.create_profile),

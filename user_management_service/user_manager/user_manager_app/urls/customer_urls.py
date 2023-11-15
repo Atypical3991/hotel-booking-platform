@@ -1,6 +1,6 @@
 from django.urls import path
 
-from ..customer_manager_views import *
+from ..views.customer_manager_views import CustomerManagerViews
 
 urlpatterns = [
     path('', CustomerManagerViews.create_profile),

@@ -1,6 +1,5 @@
 import logging
 
-from django.http import JsonResponse
 from rest_framework.decorators import api_view
 from rest_framework.generics import get_object_or_404
 from rest_framework.parsers import JSONParser
@@ -9,6 +8,7 @@ from ..models.SessionsModel import Sessions
 from ..serializers.APIResponseSerializers import GetHotelierProfileByIdSerializer
 from ..serializers.HotelierManagerAPIModelSerializers import *
 from ..utils import JwtTokenUtil
+from ..utils.ResonseHandler import CustomRESTResponseHandler
 from ..utils.wrappers import authentication_decorator
 
 
@@ -28,18 +28,32 @@ class HotelierManagerViews:
         if serializer.is_valid():
             try:
                 serializer.save()
-                return JsonResponse(serializer.data, status=200)
+                return CustomRESTResponseHandler(data=None, message="Hotelier created successfully", error=None,
+                                                 status_m="success", status=200)
             except Exception as e:
                 HotelierManagerViews.logger.error(
                     f"create_profile, exception raised!! e: {str(e)}, request : {request}")
-                return JsonResponse({"status": "failure", "error": "Something went wrong"}, status=500)
+                return CustomRESTResponseHandler(data=None, message=None, error="Something went wrong",
+                                                 status_m="failure", status=500)
 
-        return JsonResponse(serializer.errors, status=400)
+        return CustomRESTResponseHandler(data=None, message=None, error=serializer.errors,
+                                         status_m="failure", status=400)
 
     @staticmethod
     @api_view(["PUT"])
     @authentication_decorator
     def update_profile_by_id(request, id):
+
+        auth_data = getattr(request, "auth_data", None)
+        if auth_data is None:
+            return CustomRESTResponseHandler(data=None, message=None, error="You're not authorized.",
+                                             status_m="failure", status=401)
+
+        # validate whether requested is eligible to perform this action
+        if auth_data.get('user_id') != id or auth_data.get('role') != 'hotelier':
+            return CustomRESTResponseHandler(data=None, message=None, error="You're not authorized.",
+                                             status_m="failure", status=401)
+
         # Using get_object_or_404 to raise a 404 response if the instance is not found
         hotelier_instance = get_object_or_404(Hotelier, id=id)
 
@@ -53,18 +67,31 @@ class HotelierManagerViews:
         if serializer.is_valid():
             try:
                 serializer.save()
-                return JsonResponse({"status": "success", "message": "Hotelier updated successfully"}, status=200)
+                return CustomRESTResponseHandler(data=None, message="Hotelier updated successfully",
+                                                 error=None, status_m="success", status=200)
             except Exception as e:
                 HotelierManagerViews.logger.error(
                     f"update_profile_by_id, exception raised!! e: {str(e)}, request : {request}")
-            return JsonResponse({"status": "failure", "error": "Something went wrong"}, status=500)
+                return CustomRESTResponseHandler(data=None, message=None,
+                                                 error="Something went wrong", status_m="failure", status=500)
 
-        return JsonResponse(serializer.errors, status=400)
+        return CustomRESTResponseHandler(data=None, message=None, error=serializer.errors, status_m="failure",
+                                         status=400)
 
     @staticmethod
     @api_view(["GET"])
     @authentication_decorator
-    def get_profile_by_id():
+    def get_profile_by_id(request, id):
+        auth_data = getattr(request, "auth_data", None)
+        if auth_data is None:
+            return CustomRESTResponseHandler(data=None, message=None, error="You're not authorized.",
+                                             status_m="failure", status=401)
+
+        # validate whether requested is eligible to perform this action
+        if auth_data.get('user_id') != id or auth_data.get('role') != 'hotelier':
+            return CustomRESTResponseHandler(data=None, message=None, error="You're not authorized.",
+                                             status_m="failure", status=401)
+
         # Using get_object_or_404 to raise a 404 response if the instance is not found
         hotelier_instance = get_object_or_404(Hotelier, id=id)
 
@@ -74,18 +101,31 @@ class HotelierManagerViews:
         # validated and save the data
         if serializer.is_valid():
             try:
-                return JsonResponse({"status": "success", "message": "Hotelier profile fetched successfully",
-                                     "data": serializer.data, }, status=200)
+                return CustomRESTResponseHandler(data=serializer.data, message="Hotelier profile fetched successfully",
+                                                 error=None, status_m="success", status=200)
+
             except Exception as e:
                 HotelierManagerViews.logger.error(f"get_profile_by_id, exception raised!! e: {str(e)}, id: {id}")
-                return JsonResponse({"status": "failure", "error": "Something went wrong"}, status=500)
+                return CustomRESTResponseHandler(data=None, message=None, error="Something went wrong",
+                                                 status_m="failure", status=500)
 
-        return JsonResponse(serializer.errors, status=400)
+        return CustomRESTResponseHandler(data=None, message=None, error=serializer.errors, status_m="failure",
+                                         status=400)
 
     @staticmethod
     @api_view(["PUT"])
     @authentication_decorator
-    def deactivate_profile_by_id():
+    def deactivate_profile_by_id(request, id):
+        auth_data = getattr(request, "auth_data", None)
+        if auth_data is None:
+            return CustomRESTResponseHandler(data=None, message=None, error="You're not authorized.",
+                                             status_m="failure", status=401)
+
+        # validate whether requested is eligible to perform this action
+        if auth_data.get('user_id') != id or auth_data.get('role') != 'hotelier':
+            return CustomRESTResponseHandler(data=None, message=None, error="You're not authorized.",
+                                             status_m="failure", status=401)
+
         # Using get_object_or_404 to raise a 404 response if the instance is not found
         hotelier_instance = get_object_or_404(Hotelier, id=id)
 
@@ -93,15 +133,27 @@ class HotelierManagerViews:
         hotelier_instance.active = False
         try:
             hotelier_instance.save()
-            return JsonResponse({"status": "success", "message": "Hotelier deactivated successfully"}, status=200)
+            return CustomRESTResponseHandler(data=None, message="Hotelier deactivated successfully", error=None,
+                                             status_m="success", status=200)
         except Exception as e:
             HotelierManagerViews.logger.error(f"deactivate_profile_by_id, exception raised!! id:{id} e:{str(e)}")
-            return JsonResponse({"status": "failure", "message": "Something went wrong"}, status=500)
+            return CustomRESTResponseHandler(data=None, message=None, error="Something went wrong",
+                                             status_m="success", status=500)
 
     @staticmethod
     @api_view(["PUT"])
     @authentication_decorator
-    def re_activate_profile_by_id():
+    def re_activate_profile_by_id(request, id):
+        auth_data = getattr(request, "auth_data", None)
+        if auth_data is None:
+            return CustomRESTResponseHandler(data=None, message=None, error="You're not authorized.",
+                                             status_m="failure", status=401)
+
+        # validate whether requested is eligible to perform this action
+        if auth_data.get('user_id') != id or auth_data.get('role') != 'hotelier':
+            return CustomRESTResponseHandler(data=None, message=None, error="You're not authorized.",
+                                             status_m="failure", status=401)
+
         # Using get_object_or_404 to raise a 404 response if the instance is not found
         hotelier_instance = get_object_or_404(Hotelier, id=id)
 
@@ -109,10 +161,12 @@ class HotelierManagerViews:
         hotelier_instance.active = True
         try:
             hotelier_instance.save()
-            return JsonResponse({"status": "success", "message": "Hotelier re_activated successfully"}, status=200)
+            return CustomRESTResponseHandler(data=None, message="Hotelier re_activated successfully", error=None,
+                                             status_m="success", status=200)
         except Exception as e:
             HotelierManagerViews.logger.error(f"deactivate_profile_by_id, exception raised!! id:{id} e:{str(e)}")
-            return JsonResponse({"status": "failure", "message": "Something went wrong"}, status=500)
+            return CustomRESTResponseHandler(data=None, message=None, error="Something went wrong",
+                                             status_m="failure", status=500)
 
     @staticmethod
     @api_view(['POST'])
@@ -131,8 +185,9 @@ class HotelierManagerViews:
 
             # check if use is active or not
             if not hotelier_instance.active:
-                return JsonResponse({"status": "failure", "error": "You account has been deactivated. please "
-                                                                   "re-activate your account."}, status=400)
+                return CustomRESTResponseHandler(data=None, message=None, error="You account has been deactivated. "
+                                                                                "please re-activate your account.",
+                                                 status_m="failure", status=400)
             try:
                 # delete all past sessions associated with passed user_id and role
                 Sessions.objects.filter(user_id=hotelier_instance.id, role='user').delete()
@@ -142,12 +197,15 @@ class HotelierManagerViews:
 
                 # create session with newly generated token
                 Sessions.objects.create(user_id=hotelier_instance.id, token=token, role='user')
-                return JsonResponse({"status": "success", "token": token}, status=200)
+                return CustomRESTResponseHandler(data=token, message="Successfully logged-in", error=None,
+                                                 status_m="success", status=200)
             except Exception as e:
                 HotelierManagerViews.logger.error(f"login, exception raised!! e :{str(e)}")
-                return JsonResponse({"status": "failure", "error": "Something went wrong"}, status=400)
+                return CustomRESTResponseHandler(data=None, message=None, error="Something went wrong",
+                                                 status_m="failure", status=500)
 
-        return JsonResponse(serializer.errors, status=400)
+        return CustomRESTResponseHandler(data=None, message=None, error=serializer.errors,
+                                         status_m="failure", status=400)
 
     @staticmethod
     @api_view(['POST'])
@@ -166,13 +224,15 @@ class HotelierManagerViews:
             # extract auth data set inside authentication_decorator
             auth_data = getattr(request, "auth_data", None)
             if auth_data is None:
-                return JsonResponse({"status": "failure", "error": "Auth data not found"}, status=400)
+                return CustomRESTResponseHandler(data=None, message=None, error="Auth data not found",
+                                                 status_m="failure", status=400)
 
             # validate whether requested is eligible to perform this action
             if auth_data.get('user_id') != validated_data.get("user_id") or auth_data.get('role') != validated_data.get(
                     "role"):
-                return JsonResponse({"status": "failure", "error": "you're unauthorised to perform this action."},
-                                    status=401)
+                return CustomRESTResponseHandler(data=None, message=None,
+                                                 error="you're unauthorised to perform this action.",
+                                                 status_m="failure", status=401)
 
             # fetch sessions with passed user_id and role
             sessions = get_object_or_404(Sessions, user_id=validated_data.get("user_id"),
@@ -181,14 +241,18 @@ class HotelierManagerViews:
             # if no sessions present do nothing
             if sessions is None:
                 # return if no sessions present with the passed user_id and role
-                return JsonResponse({"status": "success", "message": "No sessions present"}, status=200)
+                return CustomRESTResponseHandler(data=None, message="No sessions present",
+                                                 error=None, status_m="success", status=200)
 
             try:
                 # delete all sessions for the passed user_id and role
                 Sessions.objects.filter(user_id=validated_data.get('user_id'), role=validated_data.get('role')).delete()
-                return JsonResponse({"status": "success", "message": "Customer logged put successfully."}, status=200)
+                return CustomRESTResponseHandler(data=None, message="Customer logged put successfully.",
+                                                 error=None, status_m="success", status=200)
             except Exception as e:
                 HotelierManagerViews.logger.error(f"login, exception raised!! e :{str(e)}")
-                return JsonResponse({"status": "failure", "error": "Something went wrong"}, status=400)
+                return CustomRESTResponseHandler(data=None, message=None, error="Something went wrong",
+                                                 status_m="failure", status=500)
 
-        return JsonResponse(serializer.errors, status=400)
+        return CustomRESTResponseHandler(data=None, message=None, error=serializer.errors,
+                                         status_m="failure", status=400)
