@@ -3,7 +3,7 @@ import re
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from ..models.HotelierModel import  Hotelier
+from ..models.HotelierModel import Hotelier
 
 
 class CreateHotelierSerializer(serializers.Serializer):
@@ -120,3 +120,13 @@ class UpdateHotelierSerializer(serializers.Serializer):
                                   'total of 6 digits.')
 
         return value
+
+
+class HotelierLoginSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=100, required=True)
+    password = serializers.CharField(max_length=100, required=True)
+
+
+class HotelierLogoutSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField(required=True)
+    role = serializers.CharField(max_length=20, required=True)

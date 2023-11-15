@@ -109,6 +109,7 @@ class UpdateCustomerSerializer(serializers.Serializer):
         instance.city = validated_data.get("city", instance.city)
         instance.state = validated_data.get("status", instance.state)
         instance.pincode = validated_data.get("pincode", instance.pincode)
+        instance.save()
         return instance
 
     def validate_first_name(self, value):
@@ -158,3 +159,13 @@ class UpdateCustomerSerializer(serializers.Serializer):
                                   'total of 6 digits.')
 
         return value
+
+
+class CustomerLoginSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=100, required=True)
+    password = serializers.CharField(max_length=100, required=True)
+
+
+class CustomerLogoutSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField(required=True)
+    role = serializers.CharField(max_length=20, required=True)

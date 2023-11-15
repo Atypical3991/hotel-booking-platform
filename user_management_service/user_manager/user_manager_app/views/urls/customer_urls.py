@@ -7,5 +7,7 @@ urlpatterns = [
     path('profile/<int:id>', CustomerManagerViews.get_profile_by_id),
     path('profile/update/<int:id>', CustomerManagerViews.update_profile_by_id),
     path('profile/deactivate/<int:id>', CustomerManagerViews.deactivate_profile_by_id),
-    path('profile/re_activate/<int:id>', CustomerManagerViews.re_activate_profile_by_id)
+    path('profile/re_activate/<int:id>', CustomerManagerViews.re_activate_profile_by_id),
+    path('login', CustomerManagerViews.login),
+    path('logout', CustomerManagerViews.logout)
 ]
