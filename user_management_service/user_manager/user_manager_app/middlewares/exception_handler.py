@@ -1,4 +1,4 @@
-from user_management_service.user_manager.user_manager_app.utils.ResonseHandler import CustomRESTResponseHandler
+from ..utils.ResonseHandler import CustomRESTResponseHandler
 
 
 class GlobalExceptionHandlerMiddleware:
