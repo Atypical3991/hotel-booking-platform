@@ -29,10 +29,32 @@ class CreateCustomerSerializer(serializers.Serializer):
         # Check if the value matches the pattern
         if not pattern.match(value):
             raise ValidationError('Invalid format. Only letters, numbers and underscores are allowed.')
+        return value
+
+
+    def validate_first_name(self, value):
+        # Define your pattern using a regular expression
+        # only alphabets are allowed
+        pattern = re.compile(r'^[a-zA-Z]*$')
+
+        # Check if the value matches the pattern
+        if not pattern.match(value):
+            raise ValidationError('Invalid format. Only letters are allowed.')
 
         return value
 
-    def validate_first_name(self, value):
+    def validate_state(self, value):
+        # Define your pattern using a regular expression
+        # only alphabets are allowed
+        pattern = re.compile(r'^[a-zA-Z]*$')
+
+        # Check if the value matches the pattern
+        if not pattern.match(value):
+            raise ValidationError('Invalid format. Only letters are allowed.')
+
+        return value
+
+    def validate_city(self, value):
         # Define your pattern using a regular expression
         # only alphabets are allowed
         pattern = re.compile(r'^[a-zA-Z]*$')
